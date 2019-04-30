@@ -24,56 +24,45 @@ library(ggraph)
 
 
 # Authentication using rtweet
-create_token(
-  app = "kmbuki_tweepy_api",
-  consumer_key = "ydGJZvwOlMNcx6NaXQJVHyusU",
-  consumer_secret = "367SMO1Ek6Sctq181blMMgtPMgA6gRBsKtPlGfAwxilLWn4s7Q",
-  access_token = "1405999100-WvC3LbB0ohQP190PBcQxPcnhQ336POcRHC68A7D",
-  access_secret = "QAviQx95HLVSfX2HoV7JPNybhHBYRZog4CNGOKMNnBgEA")
 
+# Search for tweets non retweeted
+depresssionke <- search_tweets(
+  "#depressionke", n = 50000, include_rts = FALSE
+)
 
+depression <- search_tweets(
+  "depression", geocode = lookup_coords("kenya"), 
+  n = 50000, retryonratelimit = TRUE
+)
 
+mental_health <- search_tweets(
+  "#LetsTalkMentalHealth", n=50000,
+  geocode = lookup_coords("kenya"),
+  retryratelimit = TRUE
+)
 
+rt_data <- rbind(depressionke, depression,mental_health)
 
-# get tweets from main hashtags related to facebook cambridge analytica scandal
+# preview  data
+head(tweet_data$text)
 
-tweet_data <- search_tweets(q="#depressionke", 
-                            n=10000, lang="en", include_rts = FALSE,
-                            retryonratelimit = TRUE)
-
-delet_face <- search_tweets(q="#DeleteFacebook", 
-                            n=10000, lang="en", include_rts = FALSE,
-                            retryonratelimit = TRUE)
-
-facebook <- search_tweets(q="#Facebook", 
-                            n=10000, lang="en", include_rts = FALSE)
-
-priva <- search_tweets(q="#dataprivacy", 
-                        n=10000, lang="en", include_rts = FALSE,
-                       retryonratelimit = TRUE)
-
-zuk <- search_tweets(q="#Zuckerberg", 
-                           n=10000, lang="en", include_rts = FALSE,
-                     retryonratelimit = TRUE)
-
-data_breac <- search_tweets(q="#facebookdatabreach", 
-                         n=10000, lang="en", include_rts = FALSE,
-                         retryonratelimit = TRUE)
-
-data_leaks <- search_tweets(q="#facebookdataleaks", 
-                           n=10000, lang="en", include_rts = FALSE,
-                           retryonratelimit = TRUE)
-
-# Combine tweetdumps
-data_dump <- rbind(facebook,priva,delet_face, cambri_analy,zuk,
-                   data_breac,data_leaks)
-
-head(data_dump$text)
-
-v <- unique(data_dump$screen_name)
+v <- unique(tweet_data$screen_name)
 total <- aggregate(data.frame(count = v), list(value = v), length)
 
-list()
+users_data(rt_data)
+
+ts_plot(rt)
+
+ts_plot(rt, "3 hours") +
+  ggplot2::theme_minimal() +
+  ggplot2::theme(plot.title = ggplot2::element_text(face = "bold")) +
+  ggplot2::labs(
+    x = NULL, y = NULL,
+    title = "Frequency of #depression Twitter statuses from past 9 days",
+    subtitle = "Twitter status (tweet) counts aggregated using three-hour intervals",
+    caption = "\nSource: Data collected from Twitter's REST API via rtweet"
+  )
+
 
 extract_text <- data_dump %>% select(text) 
 extract_hashtag <- data_dump %>% select(hashtags) 
